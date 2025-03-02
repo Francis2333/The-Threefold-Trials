@@ -1,24 +1,42 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BackgroundGenerator : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public GameObject Background;
-    public GameObject floor; 
+    public GameObject backgroundPrefab;
+    public Camera mainCamera; // Assign in Inspector (often just Camera.main)
+    public GameObject floor;
+    float x, y;
 
     void Start()
     {
-        
+        if (!mainCamera) mainCamera = Camera.main;
+        x = mainCamera.WorldToViewportPoint(new Vector3(0, 0, 0)).x;
+        y = mainCamera.WorldToViewportPoint(new Vector3(0, 0, 0)).y;
+        spawnBackground();
+        Instantiate(floor, new Vector2(mainCamera.WorldToViewportPoint(new Vector3(0.5f, 0, 0)).x, y), transform.rotation);
     }
 
-    // Update is called once per frame
     void Update()
     {
+        if (needNewBackground())
+        {
+            spawnBackground();
+        }
     }
 
-    void updateBackground()
+    void spawnBackground()
     {
-        Instantiate(Background, transform.position, transform.rotation);
-        
+        GameObject newBg = Instantiate(backgroundPrefab, new Vector2(x, y), transform.rotation);
+        x = newBg.GetComponent<Renderer>().bounds.max.x + 12.4f;
+    }
+
+    bool needNewBackground()
+    {
+        if (mainCamera.WorldToViewportPoint(new Vector3(1,0,0)).x <= x)
+        {
+            return true;
+        }
+        return false;
     }
 }
